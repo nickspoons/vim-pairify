@@ -3,6 +3,8 @@ if exists('g:loaded_pairify')
 endif
 let g:loaded_pairify = 1
 
+let g:pairify_default_mapping = get(g:, 'pairify_default_mapping', 1)
+
 let g:pairifiers = {
       \ "left": {
       \   "[": "]",
@@ -38,4 +40,7 @@ function! s:pairify()
 endfunction
 
 inoremap <expr> <silent> <Plug>(pairify-complete) <SID>pairify()
-imap <C-J> <Plug>(pairify-complete)
+
+if g:pairify_default_mapping == 1
+  imap <C-J> <Plug>(pairify-complete)
+endif
