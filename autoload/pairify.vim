@@ -1,10 +1,10 @@
 function! s:find_pair() abort
   let lnum = line('.')
   let start_from = 1
-  if lnum > g:pairifier_max_lines
-    let start_from = lnum - g:pairifier_max_lines
+  if lnum > g:pairify_max_lines
+    let start_from = lnum - g:pairify_max_lines
     echohl WarningMsg
-    echom 'More than max of ' . g:pairifier_max_lines . ' lines before cursor.'
+    echom 'More than max of ' . g:pairify_max_lines . ' lines before cursor.'
     \ . ' Searching from line ' . start_from
     echohl None
   endif
@@ -20,13 +20,13 @@ function! s:find_pair() abort
   let char_len = len(characters)
   for idx in range(char_len)
     let char = characters[idx]
-    let lidx = index(g:pairifier_lefts, char)
-    let ridx = index(g:pairifier_rights, char)
+    let lidx = index(g:pairify.lefts, char)
+    let ridx = index(g:pairify.rights, char)
     if lidx < 0 && ridx < 0
       continue
     endif
     " Remember that characters has been reversed
-    let prev = idx <= char_len ? '' : characters[idx + 1]
+    let prev = idx >= char_len ? '' : characters[idx + 1]
     let next = idx == 0 ? '' : characters[idx - 1]
     if s:is_equality_or_lambda(char, next, prev)
       continue
@@ -37,26 +37,16 @@ function! s:find_pair() abort
       endif
       call add(stack, char)
     elseif lidx >= 0
-      if !empty(stack) && stack[-1] ==# g:pairifier_rights[lidx]
+      if !empty(stack) && stack[-1] ==# g:pairify.rights[lidx]
         call remove(stack, -1)
       elseif empty(stack)
-        return g:pairifier_rights[lidx]
+        return g:pairify.rights[lidx]
       endif
     endif
   endfor
 
   let result = get(stack, 0, '')
-  return index(g:pairifier_lefts, result) >= 0 ? result : ''
-endfunction
-
-function! s:is_already_matched(match, remaining) abort
-  let characters = split(a:remaining, '\zs')
-  for char in characters
-    if index(g:pairifier_rights, char) >= 0
-      return char ==# a:match
-    endif
-  endfor
-  return 0
+  return index(g:pairify.lefts, result) >= 0 ? result : ''
 endfunction
 
 " Detect whether the current char is < or > and part of <=, >=, =>, ->
@@ -69,10 +59,10 @@ endfunction
 
 function! pairify#pairify() abort
   let pair_match = s:find_pair()
-  let remaining = getline('.')[col('.') - 1 :]
-  if s:is_already_matched(pair_match, remaining)
-    let newpos = stridx(remaining, pair_match) + 1
-    return newpos == len(remaining) ? "\<C-O>A" : "\<C-O>" . newpos . 'l'
+  let pat = '[' . substitute(join(g:pairify.rights, ''), ']', '\\]', '') . ']'
+  let m_col = matchstrpos(getline('.'), pat, col('.') - 1)[1]
+  if m_col >= col('.') - 1 && strpart(getline('.'), m_col, 1) ==# pair_match
+    return "\<C-o>:call cursor(" . line('.') . ',' . (m_col + 2) . ")\<CR>"
   else
     return pair_match
   endif

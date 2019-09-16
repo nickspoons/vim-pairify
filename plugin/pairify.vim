@@ -3,10 +3,12 @@ if exists('g:loaded_pairify')
 endif
 let g:loaded_pairify = 1
 
-let g:pairifier_lefts  = [ "[", "(", "{", "<", "'", '"', "`" ]
-let g:pairifier_rights = [ "]", ")", "}", ">", "'", '"', "`" ]
+let g:pairify = {
+\ 'lefts': [ '[', '(', '{', '<', "'", '"', '`' ],
+\ 'rights': [ ']', ')', '}', '>', "'", '"', '`' ]
+\}
 
-let g:pairifier_max_lines = 500
+let g:pairify_max_lines = get(g:, 'pairify_max_lines', 500)
 
 let g:pairify_default_mapping = get(g:, 'pairify_default_mapping', 1)
 
