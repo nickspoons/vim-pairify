@@ -1,13 +1,34 @@
-function! s:find_pair(string, start_col) abort
-  let stack = []
-  let characters = split(a:string, '\zs')
+function! s:find_pair() abort
+  let lnum = line('.')
+  let start_from = 1
+  if lnum > g:pairifier_max_lines
+    let start_from = lnum - g:pairifier_max_lines
+    echohl WarningMsg
+    echom 'More than max of ' . g:pairifier_max_lines . ' lines before cursor.'
+    \ . ' Searching from line ' . start_from
+    echohl None
+  endif
+  let lines = getline(start_from, lnum)
+  " Truncate the current line after the cursor position
+  let lines[-1] = col('.') == 1 ? '' : lines[-1][:col('.') - 2]
+  " New vimscript syntax is so nice:
+  " let characters = lines->join()->split('\zs')->reverse()
+  let characters = reverse(split(join(lines), '\zs'))
 
-  let char_idx = a:start_col
-  for char in reverse(characters)
-    let char_idx -= 1
+  let stack = []
+
+  let char_len = len(characters)
+  for idx in range(char_len)
+    let char = characters[idx]
     let lidx = index(g:pairifier_lefts, char)
     let ridx = index(g:pairifier_rights, char)
-    if s:is_equality_or_lambda(a:string, char, char_idx)
+    if lidx < 0 && ridx < 0
+      continue
+    endif
+    " Remember that characters has been reversed
+    let prev = idx <= char_len ? '' : characters[idx + 1]
+    let next = idx == 0 ? '' : characters[idx - 1]
+    if s:is_equality_or_lambda(char, next, prev)
       continue
     elseif ridx >= 0
       if lidx == ridx && !empty(stack) && stack[-1] ==# char
@@ -39,19 +60,16 @@ function! s:is_already_matched(match, remaining) abort
 endfunction
 
 " Detect whether the current char is < or > and part of <=, >=, =>, ->
-function! s:is_equality_or_lambda(string, char, char_idx) abort
-  if a:char !~# '[<>]' | return 0 | endif
-  let prev = a:char_idx == 1 ? '' : a:string[a:char_idx - 1]
-  let next = a:char_idx <= len(a:string) ? '' : a:string[a:char_idx + 1]
-  return (a:char ==# '<' && next ==# '=')
-  \   || (a:char ==# '>' && (next ==# '=' || prev =~# '[=-]'))
+" TODO: Add language-specific string escaping here, to ignore e.g.: \' in
+"   'This \'string\''
+function! s:is_equality_or_lambda(char, next, prev) abort
+  return (a:char ==# '<' && a:next ==# '=')
+  \   || (a:char ==# '>' && (a:next ==# '=' || a:prev =~# '[=-]'))
 endfunction
 
 function! pairify#pairify() abort
-  let line = getline('.')
-  let idx = col('.')-1
-  let pair_match = s:find_pair(line[:idx-1], idx)
-  let remaining = line[idx :]
+  let pair_match = s:find_pair()
+  let remaining = getline('.')[col('.') - 1 :]
   if s:is_already_matched(pair_match, remaining)
     let newpos = stridx(remaining, pair_match) + 1
     return newpos == len(remaining) ? "\<C-O>A" : "\<C-O>" . newpos . 'l'

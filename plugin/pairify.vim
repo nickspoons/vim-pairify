@@ -6,6 +6,8 @@ let g:loaded_pairify = 1
 let g:pairifier_lefts  = [ "[", "(", "{", "<", "'", '"', "`" ]
 let g:pairifier_rights = [ "]", ")", "}", ">", "'", '"', "`" ]
 
+let g:pairifier_max_lines = 500
+
 let g:pairify_default_mapping = get(g:, 'pairify_default_mapping', 1)
 
 inoremap <expr> <silent> <Plug>(pairify-complete) pairify#pairify()
