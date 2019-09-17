@@ -28,7 +28,7 @@ function! s:find_pair() abort
     " Remember that characters has been reversed
     let prev = idx >= char_len ? '' : characters[idx + 1]
     let next = idx == 0 ? '' : characters[idx - 1]
-    if s:is_equality_or_lambda(char, next, prev)
+    if s:ignore(char, next, prev)
       continue
     elseif ridx >= 0
       if lidx == ridx && !empty(stack) && stack[-1] ==# char
@@ -49,12 +49,13 @@ function! s:find_pair() abort
   return index(g:pairify.lefts, result) >= 0 ? result : ''
 endfunction
 
-" Detect whether the current char is < or > and part of <=, >=, =>, ->
+" Detect whether the current char is < or > and part of <=, >=, =>, ->, or has
+" whitespace around it (`<cast_in_typescript>` is paired, `4 < 5` is not).
 " TODO: Add language-specific string escaping here, to ignore e.g.: \' in
 "   'This \'string\''
-function! s:is_equality_or_lambda(char, next, prev) abort
-  return (a:char ==# '<' && a:next ==# '=')
-  \   || (a:char ==# '>' && (a:next ==# '=' || a:prev =~# '[=-]'))
+function! s:ignore(char, next, prev) abort
+  return (a:char ==# '<' && a:next =~# '[ =]')
+  \   || (a:char ==# '>' && (a:next ==# '=' || a:prev =~# '[ =-]'))
 endfunction
 
 function! pairify#pairify() abort
