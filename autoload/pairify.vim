@@ -26,7 +26,7 @@ function! s:find_pair() abort
       continue
     endif
     " Remember that characters has been reversed
-    let prev = idx >= char_len ? '' : characters[idx + 1]
+    let prev = idx >= char_len - 1 ? '' : characters[idx + 1]
     let next = idx == 0 ? '' : characters[idx - 1]
     if s:ignore(char, next, prev)
       continue
