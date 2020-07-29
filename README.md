@@ -9,6 +9,14 @@ to be completed. It has support for nesting.
 You can either do a standard installation or using a plugin manager such as
 Pathogen, Vundle, NeoBundle, VimPlug
 
+## Configuration
+
+You can specify a custom mapping with the `g:pairify_map`:
+
+```vim
+let g:pairify_map = "<C-J>"
+```
+
 ## Contributing
 
 * Fork It
