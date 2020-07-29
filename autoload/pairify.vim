@@ -1,3 +1,6 @@
+let s:save_cpo = &cpoptions
+set cpoptions&vim
+
 function! s:find_pair() abort
   let lnum = line('.')
   let start_from = 1
@@ -68,3 +71,8 @@ function! pairify#pairify() abort
     return pair_match
   endif
 endfunction
+
+let &cpoptions = s:save_cpo
+unlet s:save_cpo
+
+" vim:et:sw=2:sts=2
