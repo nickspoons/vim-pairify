@@ -21,7 +21,7 @@ let g:pairify_default_mapping = get(g:, 'pairify_default_mapping', 1)
 
 inoremap <expr> <silent> <Plug>(pairify-complete) pairify#pairify()
 
-if !hasmapto('<Plug>(pairify-complete)')
+if !hasmapto('<Plug>(pairify-complete)') && maparg(g:pairify_map, 'i') ==# ''
   execute 'imap' g:pairify_map '<Plug>(pairify-complete)'
 endif
 
